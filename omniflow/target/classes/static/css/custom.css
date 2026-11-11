@@ -1,0 +1,205 @@
+/* ===================================================================
+   OmniFlow Enterprise Design System & Dynamic Theming Engine
+   =================================================================== */
+
+:root {
+    --primary-color: #4f46e5;
+    --primary-hover: #4338ca;
+    --primary-light: #eef2ff;
+    --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+    --sidebar-bg: #0f172a;
+    --sidebar-text: #94a3b8;
+    --sidebar-active: #ffffff;
+    --sidebar-active-bg: rgba(99, 102, 241, 0.2);
+    --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    --card-hover-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+}
+
+/* Dynamic Themes */
+body.theme-indigo {
+    --primary-color: #4f46e5;
+    --primary-hover: #4338ca;
+    --primary-light: #eef2ff;
+    --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+}
+
+body.theme-emerald {
+    --primary-color: #059669;
+    --primary-hover: #047857;
+    --primary-light: #ecfdf5;
+    --primary-gradient: linear-gradient(135deg, #059669 0%, #10b981 100%);
+}
+
+body.theme-violet {
+    --primary-color: #7c3aed;
+    --primary-hover: #6d28d9;
+    --primary-light: #f5f3ff;
+    --primary-gradient: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%);
+}
+
+body.theme-crimson {
+    --primary-color: #e11d48;
+    --primary-hover: #be123c;
+    --primary-light: #fff1f2;
+    --primary-gradient: linear-gradient(135deg, #e11d48 0%, #f43f5e 100%);
+}
+
+body.theme-dark {
+    --primary-color: #38bdf8;
+    --primary-hover: #0ea5e9;
+    --primary-light: #0f172a;
+    --primary-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    background-color: #090d16 !important;
+    color: #e2e8f0 !important;
+}
+
+body.theme-dark .card {
+    background-color: #111827;
+    border-color: #1f2937;
+    color: #f3f4f6;
+}
+
+body.theme-dark .table {
+    color: #e5e7eb;
+}
+
+body.theme-dark .table-hover > tbody > tr:hover {
+    background-color: rgba(255, 255, 255, 0.04);
+}
+
+/* Base Layout & Typography */
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f8fafc;
+    color: #1e293b;
+    min-height: 100vh;
+}
+
+.brand-gradient-text {
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 800;
+}
+
+.btn-primary {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover) !important;
+    border-color: var(--primary-hover) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+}
+
+.badge-primary-soft {
+    background-color: var(--primary-light);
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+/* Sidebar Styles */
+.app-sidebar {
+    background: var(--sidebar-bg);
+    min-height: 100vh;
+    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.05);
+}
+
+.sidebar-nav .nav-link {
+    color: var(--sidebar-text);
+    padding: 0.75rem 1.25rem;
+    font-weight: 500;
+    border-radius: 0.5rem;
+    margin: 0.2rem 0.75rem;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s ease;
+}
+
+.sidebar-nav .nav-link i {
+    width: 24px;
+    font-size: 1.1rem;
+    margin-right: 0.75rem;
+}
+
+.sidebar-nav .nav-link:hover {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.06);
+}
+
+.sidebar-nav .nav-link.active {
+    color: var(--sidebar-active);
+    background: var(--sidebar-active-bg);
+    border-left: 3px solid var(--primary-color);
+    font-weight: 600;
+}
+
+/* Modern Card Components */
+.card {
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    border-radius: 0.75rem;
+    box-shadow: var(--card-shadow);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    box-shadow: var(--card-hover-shadow);
+}
+
+.card-kpi {
+    border-left: 4px solid var(--primary-color);
+}
+
+.kpi-icon-wrapper {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+}
+
+/* Risk Badges */
+.badge-danger {
+    background-color: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+}
+
+.badge-warning {
+    background-color: #fef3c7;
+    color: #d97706;
+    border: 1px solid #fde68a;
+}
+
+.badge-success {
+    background-color: #d1fae5;
+    color: #059669;
+    border: 1px solid #a7f3d0;
+}
+
+.badge-info {
+    background-color: #e0f2fe;
+    color: #0284c7;
+    border: 1px solid #bae6fd;
+}
+
+/* Print Invoice Styles */
+@media print {
+    .app-sidebar, .navbar, .btn-no-print, .alert {
+        display: none !important;
+    }
+    body {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+    }
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+}

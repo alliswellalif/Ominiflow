@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${'Products - ' + appName}">Products - OmniFlow</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/custom.css}">
+</head>
+<body th:class="${primaryTheme != null ? primaryTheme : 'theme-indigo'}">
+
+    <div class="d-flex min-vh-100">
+        <div th:replace="~{layout/sidebar :: sidebar('products')}"></div>
+
+        <div class="flex-grow-1 d-flex flex-column min-vh-100 overflow-hidden">
+            <header th:replace="~{layout/header :: header}"></header>
+
+            <div class="container-fluid px-4 pt-3">
+                <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+                    <i class="bi bi-check-circle-fill me-2"></i> <span th:text="${successMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+                    <i class="bi bi-exclamation-octagon-fill me-2"></i> <span th:text="${errorMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            </div>
+
+            <main class="flex-grow-1 container-fluid px-4 py-3">
+                <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+                    <div>
+                        <h3 class="fw-bold mb-1">
+                            <span th:text="${filterTitle ?: 'Products &amp; Inventory Catalog'}">Products &amp; Inventory</span>
+                        </h3>
+                        <p class="text-muted small mb-0">Master catalog of materials, sensors, medical lots, and hardware SKUs.</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a th:href="@{/export/products.csv}" class="btn btn-outline-secondary">
+                            <i class="bi bi-file-earmark-arrow-down me-1"></i> Export CSV
+                        </a>
+                        <a th:href="@{/products/stock-adjust}" class="btn btn-outline-primary">
+                            <i class="bi bi-arrow-left-right me-1"></i> Adjust Stock
+                        </a>
+                        <a th:href="@{/products/new}" class="btn btn-primary">
+                            <i class="bi bi-plus-lg me-1"></i> Add New Product
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card p-3 mb-4">
+                    <form th:action="@{/products}" method="get" class="row g-2 align-items-center">
+                        <div class="col-md-6 col-lg-5">
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                                <input type="text" name="search" class="form-control border-start-0" placeholder="Search by SKU, product name, or warehouse bin..." th:value="${searchQuery}">
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-secondary px-3">Filter</button>
+                            <a th:href="@{/products}" class="btn btn-light border ms-1" th:if="${searchQuery != null}">Reset</a>
+                        </div>
+                        <div class="col-auto ms-auto">
+                            <a th:href="@{/products(lowStock=true)}" class="btn btn-outline-warning text-dark btn-sm">
+                                <i class="bi bi-exclamation-triangle me-1"></i> Show Low Stock Only
+                            </a>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light small">
+                                <tr>
+                                    <th>SKU</th>
+                                    <th>Product Name</th>
+                                    <th>Category</th>
+                                    <th>Warehouse Bin</th>
+                                    <th>Stock Level</th>
+                                    <th>Unit Cost</th>
+                                    <th>Selling Price</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="p : ${products}">
+                                    <td class="fw-bold">
+                                        <code th:text="${p.sku}">SKU-001</code>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold" th:text="${p.name}">Product Name</div>
+                                        <small class="text-muted" th:text="${p.unitOfMeasure}">PCS</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border" th:text="${p.category != null ? p.category.name : 'Unassigned'}">Electronics</span>
+                                    </td>
+                                    <td>
+                                        <span class="small text-muted"><i class="bi bi-geo-alt me-1"></i><span th:text="${p.warehouseLocation}">Zone A</span></span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <span class="fw-bold fs-6 me-2" th:text="${p.quantityInStock}">45</span>
+                                            <span th:if="${p.quantityInStock <= 0}" class="badge bg-danger">OUT OF STOCK</span>
+                                            <span th:if="${p.quantityInStock > 0 and p.isLowStock()}" class="badge bg-warning text-dark">REORDER</span>
+                                            <span th:if="${!p.isLowStock() and p.quantityInStock > 0}" class="badge bg-success bg-opacity-10 text-success">OPTIMAL</span>
+                                        </div>
+                                        <small class="text-muted" style="font-size: 0.72rem;">Min Threshold: <span th:text="${p.reorderThreshold}">10</span></small>
+                                    </td>
+                                    <td>
+                                        <span th:text="${currencySymbol}">$</span><span th:text="${p.unitCost}">0.00</span>
+                                    </td>
+                                    <td class="fw-bold text-primary">
+                                        <span th:text="${currencySymbol}">$</span><span th:text="${p.sellingPrice}">0.00</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success bg-opacity-10 text-success" th:text="${p.status}">ACTIVE</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <a th:href="@{'/products/stock-adjust?productId=' + ${p.id}}" class="btn btn-sm btn-outline-secondary me-1" title="Adjust Stock">
+                                            <i class="bi bi-arrow-left-right"></i>
+                                        </a>
+                                        <a th:href="@{'/products/edit/' + ${p.id}}" class="btn btn-sm btn-outline-primary me-1" title="Edit Product">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                        <a th:href="@{'/products/delete/' + ${p.id}}" 
+                                           sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_MANAGER')"
+                                           class="btn btn-sm btn-outline-danger" 
+                                           onclick="return confirm('Are you sure you want to delete this product?');" title="Delete Product">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+
+            <div th:replace="~{layout/footer :: footer}"></div>
+        </div>
+    </div>
+</body>
+</html>

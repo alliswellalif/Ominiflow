@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${'Stock Adjustment - ' + appName}">Stock Adjustment - OmniFlow</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/custom.css}">
+</head>
+<body th:class="${primaryTheme != null ? primaryTheme : 'theme-indigo'}">
+
+    <div class="d-flex min-vh-100">
+        <div th:replace="~{layout/sidebar :: sidebar('stock-adjust')}"></div>
+
+        <div class="flex-grow-1 d-flex flex-column min-vh-100 overflow-hidden">
+            <header th:replace="~{layout/header :: header}"></header>
+
+            <main class="flex-grow-1 container-fluid px-4 py-3">
+                <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+                    <div>
+                        <h3 class="fw-bold mb-1">Stock Level Adjustment &amp; Audit Balance</h3>
+                        <p class="text-muted small mb-0">Record restock shipments, quarantine damages, customer returns, or routine physical audit reconciliations.</p>
+                    </div>
+                    <a th:href="@{/products}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Back to Catalog
+                    </a>
+                </div>
+
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="card p-4">
+                            <form th:action="@{/products/stock-adjust}" th:object="${adjustDto}" method="post">
+                                
+                                <div class="mb-3">
+                                    <label class="form-label small fw-semibold">Target Product SKU *</label>
+                                    <select th:field="*{productId}" class="form-select" required>
+                                        <option value="">-- Choose Product to Adjust --</option>
+                                        <option th:each="p : ${products}" 
+                                                th:value="${p.id}" 
+                                                th:text="${p.sku + ' - ' + p.name + ' (Current Stock: ' + p.quantityInStock + ' ' + p.unitOfMeasure + ')'}"></option>
+                                    </select>
+                                </div>
+
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-semibold">Adjustment Type *</label>
+                                        <select th:field="*{movementType}" class="form-select" required>
+                                            <option value="INBOUND_PURCHASE">INBOUND: Supplier Restock / Goods Receipt (+)</option>
+                                            <option value="RETURN_RESTOCK">INBOUND: Customer Return / Restock (+)</option>
+                                            <option value="ADJUSTMENT_DAMAGE">OUTBOUND: Damaged / Expired / Quarantined (-)</option>
+                                            <option value="ADJUSTMENT_AUDIT">RECONCILIATION: Physical Audit Variance Adjustment</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-semibold">Quantity Delta *</label>
+                                        <input type="number" th:field="*{quantity}" class="form-control" placeholder="e.g. 25" required>
+                                        <small class="text-muted">Enter quantity to increase or decrease</small>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label small fw-semibold">Reference Document / Batch #</label>
+                                    <input type="text" th:field="*{referenceNumber}" class="form-control" placeholder="e.g. PO-9812, RMA-404, AUDIT-2026-Q4">
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="form-label small fw-semibold">Reason / Operational Justification *</label>
+                                    <textarea th:field="*{reason}" class="form-control" rows="3" placeholder="Provide reason for this stock adjustment (this will be logged into immutable audit trail)..." required></textarea>
+                                </div>
+
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a th:href="@{/products}" class="btn btn-light border px-4">Cancel</a>
+                                    <button type="submit" class="btn btn-primary px-4">
+                                        <i class="bi bi-check2-circle me-1"></i> Apply &amp; Commit Adjustment
+                                    </button>
+                                </div>
+
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <div th:replace="~{layout/footer :: footer}"></div>
+        </div>
+    </div>
+</body>
+</html>

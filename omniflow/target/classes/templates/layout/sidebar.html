@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+    <aside th:fragment="sidebar(activeItem)" class="app-sidebar text-white p-3 d-flex flex-column" style="width: 270px; flex-shrink: 0;">
+        <div class="d-flex align-items-center mb-4 px-2 pt-2 border-bottom border-secondary border-opacity-25 pb-3">
+            <div class="bg-primary p-2 rounded-3 me-2 text-white d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                <i class="bi bi-boxes fs-5"></i>
+            </div>
+            <div>
+                <h5 class="mb-0 fw-bold text-white text-truncate" style="max-width: 180px;" th:text="${appName}">OmniFlow</h5>
+                <small class="text-white-50" style="font-size: 0.72rem;" th:text="${appTagline}">Supply Chain ERP</small>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav flex-grow-1">
+            <a th:href="@{/dashboard}" class="nav-link" th:classappend="${activeItem == 'dashboard' ? 'active' : ''}">
+                <i class="bi bi-speedometer2"></i> Executive Dashboard
+            </a>
+            
+            <div class="text-uppercase text-white-50 px-3 mt-3 mb-1 fw-bold" style="font-size: 0.68rem; letter-spacing: 0.05em;">Operations</div>
+            <a th:href="@{/products}" class="nav-link" th:classappend="${activeItem == 'products' ? 'active' : ''}">
+                <i class="bi bi-box-seam"></i> Products Catalog
+            </a>
+            <a th:href="@{/products/stock-adjust}" class="nav-link" th:classappend="${activeItem == 'stock-adjust' ? 'active' : ''}">
+                <i class="bi bi-arrow-left-right"></i> Stock Adjustments
+            </a>
+            <a th:href="@{/orders}" class="nav-link" th:classappend="${activeItem == 'orders' ? 'active' : ''}">
+                <i class="bi bi-receipt"></i> Orders &amp; Dispatch
+            </a>
+            <a th:href="@{/orders/new}" class="nav-link" th:classappend="${activeItem == 'new-order' ? 'active' : ''}">
+                <i class="bi bi-plus-circle"></i> Create New Order
+            </a>
+
+            <div class="text-uppercase text-white-50 px-3 mt-3 mb-1 fw-bold" style="font-size: 0.68rem; letter-spacing: 0.05em;">Intelligent Features</div>
+            <a th:href="@{/analytics/predictive}" class="nav-link" th:classappend="${activeItem == 'predictive' ? 'active' : ''}">
+                <i class="bi bi-cpu-fill text-warning"></i> Predictive AI Matrix
+            </a>
+            <a th:href="@{/verify}" class="nav-link" th:classappend="${activeItem == 'verify' ? 'active' : ''}">
+                <i class="bi bi-shield-check text-success"></i> Cryptographic Ledger
+            </a>
+
+            <div class="text-uppercase text-white-50 px-3 mt-3 mb-1 fw-bold" style="font-size: 0.68rem; letter-spacing: 0.05em;">Administration</div>
+            <a th:href="@{/audit}" class="nav-link" th:classappend="${activeItem == 'audit' ? 'active' : ''}" sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_MANAGER')">
+                <i class="bi bi-journal-text text-info"></i> Compliance Audit
+            </a>
+            <a th:href="@{/telemetry}" class="nav-link" th:classappend="${activeItem == 'telemetry' ? 'active' : ''}" sec:authorize="hasRole('ROLE_ADMIN')">
+                <i class="bi bi-heart-pulse-fill text-danger"></i> System Telemetry
+            </a>
+            <a th:href="@{/settings}" class="nav-link" th:classappend="${activeItem == 'settings' ? 'active' : ''}" sec:authorize="hasRole('ROLE_ADMIN')">
+                <i class="bi bi-palette-fill text-primary"></i> Live Theme &amp; Brand
+            </a>
+        </nav>
+
+        <div class="border-top border-secondary border-opacity-25 pt-3 mt-auto px-2">
+            <div class="d-flex align-items-center mb-2">
+                <div class="bg-secondary bg-opacity-25 rounded-circle p-2 text-white me-2">
+                    <i class="bi bi-person-circle"></i>
+                </div>
+                <div class="overflow-hidden">
+                    <div class="fw-semibold text-white small text-truncate" th:text="${currentUserFullName ?: currentUsername}">User</div>
+                    <span class="badge bg-primary text-uppercase" style="font-size: 0.65rem;" th:text="${currentUserRole ?: 'STAFF'}">ADMIN</span>
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                <a th:href="@{/profile}" class="btn btn-sm btn-outline-light flex-grow-1" style="font-size: 0.78rem;">
+                    <i class="bi bi-gear"></i> Profile
+                </a>
+                <form th:action="@{/logout}" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-sm btn-outline-danger" style="font-size: 0.78rem;" title="Sign Out">
+                        <i class="bi bi-box-arrow-right"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </aside>
+</body>
+</html>

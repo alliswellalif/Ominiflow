@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${'Predictive AI Matrix - ' + appName}">Predictive AI - OmniFlow</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/custom.css}">
+</head>
+<body th:class="${primaryTheme != null ? primaryTheme : 'theme-indigo'}">
+
+    <div class="d-flex min-vh-100">
+        <div th:replace="~{layout/sidebar :: sidebar('predictive')}"></div>
+
+        <div class="flex-grow-1 d-flex flex-column min-vh-100 overflow-hidden">
+            <header th:replace="~{layout/header :: header}"></header>
+
+            <main class="flex-grow-1 container-fluid px-4 py-3">
+                <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <h3 class="fw-bold mb-0">Predictive Stockout Risk &amp; EOQ Reorder Matrix</h3>
+                            <span class="badge bg-warning text-dark"><i class="bi bi-cpu-fill me-1"></i> AI &amp; Heuristic Engine</span>
+                        </div>
+                        <p class="text-muted small mb-0">Automated algorithmic analysis of daily consumption velocity, supplier lead times, and Economic Order Quantity (EOQ) optimization.</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a th:href="@{/products/stock-adjust}" class="btn btn-primary">
+                            <i class="bi bi-arrow-left-right me-1"></i> Rapid Stock Inbound
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card p-3 mb-4 bg-light border-0 shadow-sm">
+                    <div class="row align-items-center g-3">
+                        <div class="col-md-8">
+                            <h6 class="fw-bold text-dark mb-1">
+                                <i class="bi bi-calculator text-primary me-2"></i> How the Predictive Engine Works:
+                            </h6>
+                            <p class="text-muted small mb-0">
+                                1. <strong>Run-Out Days:</strong> Days Remaining = Current Stock / Daily Velocity.<br>
+                                2. <strong>Economic Order Quantity (EOQ):</strong> sqrt((2 &times; Annual Demand &times; Order Cost) / Holding Cost).<br>
+                                3. <strong>Urgency Scoring:</strong> Dynamically scores stockout probability (0–100) factoring in supplier transit lead time.
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <span class="badge bg-danger p-2 me-1 fs-6"><span th:text="${criticalCount}">2</span> Critical</span>
+                            <span class="badge bg-warning text-dark p-2 me-1 fs-6"><span th:text="${warningCount}">3</span> Reorder</span>
+                            <span class="badge bg-success p-2 fs-6"><span th:text="${healthyCount}">10</span> Healthy</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light small">
+                                <tr>
+                                    <th>Urgency</th>
+                                    <th>SKU &amp; Product</th>
+                                    <th>Current Stock</th>
+                                    <th>Daily Velocity</th>
+                                    <th>Days to Stockout</th>
+                                    <th>Supplier Lead Time</th>
+                                    <th>AI Recommended EOQ</th>
+                                    <th>Estimated Reorder Cost</th>
+                                    <th class="text-end">Requisition Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="row : ${matrix}">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="progress flex-grow-1 me-2" style="height: 6px; width: 60px;">
+                                                <div class="progress-bar" 
+                                                     th:classappend="${row.urgencyScore >= 90 ? 'bg-danger' : (row.urgencyScore >= 60 ? 'bg-warning' : 'bg-success')}" 
+                                                     th:style="'width: ' + ${row.urgencyScore} + '%;'"></div>
+                                            </div>
+                                            <span class="fw-bold small" th:text="${row.urgencyScore}">95</span>
+                                        </div>
+                                        <span class="badge" th:classappend="${row.riskBadgeClass}" th:text="${row.riskLevel}" style="font-size: 0.65rem;">CRITICAL</span>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold text-truncate" style="max-width: 170px;" th:text="${row.productName}">Product</div>
+                                        <code class="small text-muted" th:text="${row.sku}">SKU-001</code>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold fs-6" th:text="${row.currentStock}">15</span>
+                                        <small class="text-muted d-block" style="font-size: 0.72rem;">Min: <span th:text="${row.reorderThreshold}">20</span></small>
+                                    </td>
+                                    <td>
+                                        <span class="fw-semibold" th:text="${row.dailyVelocity}">2.5</span>
+                                        <small class="text-muted d-block" style="font-size: 0.72rem;">units / day</small>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i th:if="${row.daysRemaining <= 3}" class="bi bi-fire text-danger me-1"></i>
+                                            <i th:if="${row.daysRemaining > 3 and row.daysRemaining <= 7}" class="bi bi-clock-history text-warning me-1"></i>
+                                            <span class="fw-bold fs-6" th:text="${row.daysRemaining}">2.8</span>
+                                            <span class="ms-1 small text-muted">days</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span th:text="${row.supplierLeadTimeDays}">5</span> Days
+                                    </td>
+                                    <td class="fw-bold text-primary">
+                                        <i class="bi bi-sparkles text-warning me-1"></i>
+                                        <span th:text="${row.recommendedOrderQuantity}">75</span> Units
+                                    </td>
+                                    <td class="fw-semibold text-dark">
+                                        <span th:text="${currencySymbol}">$</span><span th:text="${#numbers.formatDecimal(row.estimatedReorderCost, 1, 'COMMA', 2, 'POINT')}">1,250.00</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <a th:href="@{'/products/stock-adjust?productId=' + ${row.productId}}" class="btn btn-sm btn-primary py-1 px-3 shadow-sm" style="font-size: 0.78rem;">
+                                            <i class="bi bi-cart-plus me-1"></i> Order EOQ
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+
+            <div th:replace="~{layout/footer :: footer}"></div>
+        </div>
+    </div>
+</body>
+</html>

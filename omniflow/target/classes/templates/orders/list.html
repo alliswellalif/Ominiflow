@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${'Orders - ' + appName}">Orders - OmniFlow</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/custom.css}">
+</head>
+<body th:class="${primaryTheme != null ? primaryTheme : 'theme-indigo'}">
+
+    <div class="d-flex min-vh-100">
+        <div th:replace="~{layout/sidebar :: sidebar('orders')}"></div>
+
+        <div class="flex-grow-1 d-flex flex-column min-vh-100 overflow-hidden">
+            <header th:replace="~{layout/header :: header}"></header>
+
+            <main class="flex-grow-1 container-fluid px-4 py-3">
+                <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+                    <div>
+                        <h3 class="fw-bold mb-1">Orders &amp; Outbound Consignments</h3>
+                        <p class="text-muted small mb-0">Manage customer purchase orders, logistics dispatches, and cryptographic delivery passes.</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a th:href="@{/export/orders.csv}" class="btn btn-outline-secondary">
+                            <i class="bi bi-file-earmark-arrow-down me-1"></i> Export Ledger CSV
+                        </a>
+                        <a th:href="@{/orders/new}" class="btn btn-primary">
+                            <i class="bi bi-plus-lg me-1"></i> Create New Order
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card p-3 mb-4">
+                    <form th:action="@{/orders}" method="get" class="row g-2 align-items-center">
+                        <div class="col-md-6 col-lg-5">
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                                <input type="text" name="search" class="form-control border-start-0" placeholder="Search by Order #, client name, or email..." th:value="${searchQuery}">
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-secondary px-3">Search</button>
+                            <a th:href="@{/orders}" class="btn btn-light border ms-1" th:if="${searchQuery != null}">Reset</a>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light small">
+                                <tr>
+                                    <th>Order Reference</th>
+                                    <th>Customer / Recipient</th>
+                                    <th>Date Issued</th>
+                                    <th>Items Count</th>
+                                    <th>Total Amount</th>
+                                    <th>Fulfillment Status</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="o : ${orders}">
+                                    <td class="fw-bold">
+                                        <a th:href="@{'/orders/view/' + ${o.id}}" class="text-decoration-none">
+                                            <code th:text="${o.orderNumber}">ORD-202611-001</code>
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold" th:text="${o.customerName}">Acme Logistics</div>
+                                        <small class="text-muted" th:text="${o.customerEmail}">buyer@acme.com</small>
+                                    </td>
+                                    <td>
+                                        <span th:text="${#temporals.format(o.orderDate, 'yyyy-MM-dd HH:mm')}">2026-11-12</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border">
+                                            <span th:text="${o.items.size()}">2</span> Item(s)
+                                        </span>
+                                    </td>
+                                    <td class="fw-bold text-dark">
+                                        <span th:text="${currencySymbol}">$</span><span th:text="${o.totalAmount}">0.00</span>
+                                    </td>
+                                    <td>
+                                        <span th:if="${o.status.name() == 'COMPLETED'}" class="badge bg-success">COMPLETED</span>
+                                        <span th:if="${o.status.name() == 'DISPATCHED'}" class="badge bg-primary">DISPATCHED</span>
+                                        <span th:if="${o.status.name() == 'APPROVED'}" class="badge bg-info text-dark">APPROVED</span>
+                                        <span th:if="${o.status.name() == 'PENDING'}" class="badge bg-warning text-dark">PENDING</span>
+                                        <span th:if="${o.status.name() == 'CANCELLED'}" class="badge bg-secondary">CANCELLED</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <a th:href="@{'/orders/view/' + ${o.id}}" class="btn btn-sm btn-outline-primary me-1" title="View Order">
+                                            <i class="bi bi-eye"></i> Details
+                                        </a>
+                                        <a th:href="@{'/orders/invoice/' + ${o.id}}" class="btn btn-sm btn-outline-dark me-1" title="Print Invoice">
+                                            <i class="bi bi-printer"></i>
+                                        </a>
+                                        <a th:href="@{'/verify/' + ${o.verificationHash}}" class="btn btn-sm btn-outline-success" title="Verify SHA-256 Hash">
+                                            <i class="bi bi-shield-check"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+
+            <div th:replace="~{layout/footer :: footer}"></div>
+        </div>
+    </div>
+</body>
+</html>
