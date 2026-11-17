@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${'Create Order - ' + appName}">Create Order - OmniFlow</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/custom.css}">
+</head>
+<body th:class="${primaryTheme != null ? primaryTheme : 'theme-indigo'}">
+
+    <div class="d-flex min-vh-100">
+        <div th:replace="~{layout/sidebar :: sidebar('new-order')}"></div>
+
+        <div class="flex-grow-1 d-flex flex-column min-vh-100 overflow-hidden">
+            <header th:replace="~{layout/header :: header}"></header>
+
+            <main class="flex-grow-1 container-fluid px-4 py-3">
+                <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+                    <div>
+                        <h3 class="fw-bold mb-1">Create New Consignment Order</h3>
+                        <p class="text-muted small mb-0">Assemble line items, calculate taxes &amp; discounts, and generate a tamper-evident cryptographic QR seal.</p>
+                    </div>
+                    <a th:href="@{/orders}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Back to Orders
+                    </a>
+                </div>
+
+                <div id="product-options-template" style="display: none;">
+                    <th:block th:each="p : ${products}">
+                        <option th:value="${p.id}" 
+                                th:data-price="${p.sellingPrice}" 
+                                th:text="${p.sku + ' - ' + p.name + ' (' + currencySymbol + p.sellingPrice + ' | ' + p.quantityInStock + ' in stock)'}"></option>
+                    </th:block>
+                </div>
+
+                <form th:action="@{/orders/create}" th:object="${orderRequest}" method="post">
+                    <div class="row g-4">
+                        <div class="col-lg-4">
+                            <div class="card p-4 h-100">
+                                <h6 class="fw-bold text-primary mb-3">
+                                    <i class="bi bi-person-badge me-2"></i> Client &amp; Destination
+                                </h6>
+
+                                <div class="mb-3">
+                                    <label class="form-label small fw-semibold">Customer / Company Name *</label>
+                                    <input type="text" th:field="*{customerName}" class="form-control" placeholder="e.g. Apex BioTech Labs" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label small fw-semibold">Contact Email *</label>
+                                    <input type="email" th:field="*{customerEmail}" class="form-control" placeholder="e.g. receiving@apexbio.com" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label small fw-semibold">Phone Number</label>
+                                    <input type="text" th:field="*{customerPhone}" class="form-control" placeholder="e.g. +1 (415) 555-0199">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label small fw-semibold">Shipping Destination Address *</label>
+                                    <textarea th:field="*{shippingAddress}" class="form-control" rows="3" placeholder="Dock #, Street address, City, Postal Code" required></textarea>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label small fw-semibold">Dispatch Handling Notes</label>
+                                    <textarea th:field="*{notes}" class="form-control" rows="2" placeholder="e.g. Keep refrigerated, Fragile sensors"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-8">
+                            <div class="card p-4">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="fw-bold text-primary mb-0">
+                                        <i class="bi bi-cart-check me-2"></i> Consignment Line Items
+                                    </h6>
+                                    <button type="button" id="btn-add-order-item" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-plus-circle me-1"></i> Add Item Line
+                                    </button>
+                                </div>
+
+                                <div class="table-responsive mb-3">
+                                    <table class="table table-bordered align-middle">
+                                        <thead class="table-light small">
+                                            <tr>
+                                                <th style="width: 45%;">Product SKU / Title *</th>
+                                                <th style="width: 15%;">Quantity *</th>
+                                                <th style="width: 20%;">Unit Price *</th>
+                                                <th style="width: 15%;" class="text-end">Subtotal</th>
+                                                <th style="width: 5%;" class="text-center">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="order-items-tbody">
+                                            <tr>
+                                                <td>
+                                                    <select name="items[0].productId" class="form-select product-select" required onchange="updateRowPrice(this)">
+                                                        <option value="">-- Choose Product --</option>
+                                                        <th:block th:each="p : ${products}">
+                                                            <option th:value="${p.id}" 
+                                                                    th:data-price="${p.sellingPrice}" 
+                                                                    th:text="${p.sku + ' - ' + p.name + ' (' + currencySymbol + p.sellingPrice + ' | ' + p.quantityInStock + ' in stock)'}"></option>
+                                                        </th:block>
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <input type="number" name="items[0].quantity" class="form-control item-qty" value="1" min="1" required oninput="calculateRowTotal(this)">
+                                                </td>
+                                                <td>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text" th:text="${currencySymbol}">$</span>
+                                                        <input type="number" name="items[0].unitPrice" class="form-control item-price" step="0.01" min="0" required oninput="calculateRowTotal(this)">
+                                                    </div>
+                                                </td>
+                                                <td class="text-end fw-bold">
+                                                    <span th:text="${currencySymbol}">$</span><span class="row-total">0.00</span>
+                                                </td>
+                                                <td class="text-center">
+                                                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeRow(this)">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div class="bg-light p-3 rounded-3 mb-4">
+                                    <div class="row justify-content-end">
+                                        <div class="col-md-6">
+                                            <div class="d-flex justify-content-between mb-2">
+                                                <span class="text-muted small">Items Subtotal:</span>
+                                                <span class="fw-semibold"><span th:text="${currencySymbol}">$</span><span id="summary-subtotal">0.00</span></span>
+                                            </div>
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <span class="text-muted small">Tax Amount:</span>
+                                                <div class="input-group input-group-sm" style="width: 130px;">
+                                                    <span class="input-group-text" th:text="${currencySymbol}">$</span>
+                                                    <input type="number" id="input-tax" th:field="*{taxAmount}" class="form-control" step="0.01" min="0" oninput="updateOrderSummary()">
+                                                </div>
+                                            </div>
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <span class="text-muted small">Commercial Discount:</span>
+                                                <div class="input-group input-group-sm" style="width: 130px;">
+                                                    <span class="input-group-text" th:text="${currencySymbol}">$</span>
+                                                    <input type="number" id="input-discount" th:field="*{discountAmount}" class="form-control" step="0.01" min="0" oninput="updateOrderSummary()">
+                                                </div>
+                                            </div>
+                                            <hr class="my-2">
+                                            <div class="d-flex justify-content-between fs-5 fw-bold text-dark">
+                                                <span>Total Payable:</span>
+                                                <span class="text-primary"><span th:text="${currencySymbol}">$</span><span id="summary-grand-total">0.00</span></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a th:href="@{/orders}" class="btn btn-light border px-4">Cancel</a>
+                                    <button type="submit" class="btn btn-primary px-4 fw-semibold shadow-sm">
+                                        <i class="bi bi-shield-check me-1"></i> Issue Consignment &amp; Sign
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </main>
+
+            <div th:replace="~{layout/footer :: footer}"></div>
+        </div>
+    </div>
+</body>
+</html>

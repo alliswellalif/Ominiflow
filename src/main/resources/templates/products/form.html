@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${(isNew ? 'New Product' : 'Edit Product') + ' - ' + appName}">Product Form - OmniFlow</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/custom.css}">
+</head>
+<body th:class="${primaryTheme != null ? primaryTheme : 'theme-indigo'}">
+
+    <div class="d-flex min-vh-100">
+        <div th:replace="~{layout/sidebar :: sidebar('products')}"></div>
+
+        <div class="flex-grow-1 d-flex flex-column min-vh-100 overflow-hidden">
+            <header th:replace="~{layout/header :: header}"></header>
+
+            <main class="flex-grow-1 container-fluid px-4 py-3">
+                <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+                    <div>
+                        <h3 class="fw-bold mb-1" th:text="${isNew ? 'Add New Product SKU' : 'Edit Product Details'}">Product Management</h3>
+                        <p class="text-muted small mb-0">Configure pricing, category classification, warehouse storage bin, and reorder velocity.</p>
+                    </div>
+                    <a th:href="@{/products}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Back to Catalog
+                    </a>
+                </div>
+
+                <div class="row justify-content-center">
+                    <div class="col-lg-10">
+                        <div class="card p-4">
+                            <form th:action="@{/products/save}" th:object="${product}" method="post">
+                                <input type="hidden" th:field="*{id}">
+                                
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label small fw-semibold">SKU Code *</label>
+                                        <input type="text" th:field="*{sku}" class="form-control" placeholder="e.g. SKU-MED-99" required>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <label class="form-label small fw-semibold">Product Name *</label>
+                                        <input type="text" th:field="*{name}" class="form-control" placeholder="e.g. Ultra-Cold Transport Bio-Container" required>
+                                    </div>
+                                </div>
+
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-semibold">Category</label>
+                                        <select th:field="*{category.id}" class="form-select">
+                                            <option value="">-- Select Category --</option>
+                                            <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.name}"></option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-semibold">Primary Supplier</label>
+                                        <select th:field="*{supplier.id}" class="form-select">
+                                            <option value="">-- Select Supplier --</option>
+                                            <option th:each="s : ${suppliers}" th:value="${s.id}" th:text="${s.name + ' (' + s.leadTimeDays + 'd lead)'}"></option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-3">
+                                        <label class="form-label small fw-semibold">Unit Cost Price *</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text" th:text="${currencySymbol}">$</span>
+                                            <input type="number" th:field="*{unitCost}" class="form-control" step="0.01" min="0" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label small fw-semibold">Selling Price *</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text" th:text="${currencySymbol}">$</span>
+                                            <input type="number" th:field="*{sellingPrice}" class="form-control" step="0.01" min="0" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label small fw-semibold">Initial / Current Stock *</label>
+                                        <input type="number" th:field="*{quantityInStock}" class="form-control" min="0" required>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label small fw-semibold">Unit of Measure</label>
+                                        <input type="text" th:field="*{unitOfMeasure}" class="form-control" placeholder="e.g. PCS, BOX, KG, L">
+                                    </div>
+                                </div>
+
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label small fw-semibold">Reorder Threshold *</label>
+                                        <input type="number" th:field="*{reorderThreshold}" class="form-control" min="1" required>
+                                        <small class="text-muted">Triggers low-stock warning</small>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small fw-semibold">Safety Stock Buffer *</label>
+                                        <input type="number" th:field="*{safetyStock}" class="form-control" min="0" required>
+                                        <small class="text-muted">Minimum emergency reserve</small>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small fw-semibold">Daily Consumption Velocity *</label>
+                                        <input type="number" th:field="*{dailyVelocity}" class="form-control" step="0.1" min="0.1" required>
+                                        <small class="text-muted">Estimated units consumed per day</small>
+                                    </div>
+                                </div>
+
+                                <div class="row g-3 mb-4">
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-semibold">Warehouse Storage Bin / Location</label>
+                                        <input type="text" th:field="*{warehouseLocation}" class="form-control" placeholder="e.g. Cold Chamber 2 - Tier B">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-semibold">Operational Status</label>
+                                        <select th:field="*{status}" class="form-select">
+                                            <option value="ACTIVE">ACTIVE</option>
+                                            <option value="DISCONTINUED">DISCONTINUED</option>
+                                            <option value="OUT_OF_STOCK">OUT OF STOCK</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="form-label small fw-semibold">Technical Specifications / Description</label>
+                                    <textarea th:field="*{description}" class="form-control" rows="3" placeholder="Enter batch notes, chemical stability, or dimensions..."></textarea>
+                                </div>
+
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a th:href="@{/products}" class="btn btn-light border px-4">Cancel</a>
+                                    <button type="submit" class="btn btn-primary px-4">
+                                        <i class="bi bi-check-lg me-1"></i> Save Product Record
+                                    </button>
+                                </div>
+
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <div th:replace="~{layout/footer :: footer}"></div>
+        </div>
+    </div>
+</body>
+</html>
